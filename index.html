@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Число внутрішнього ресурсу</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Montserrat', Arial, sans-serif;
+      background: radial-gradient(circle at top, #39235c 0%, #12091f 55%, #07030d 100%);
+      color: #f9f6f2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 420px;
+      border: 1px solid rgba(255, 203, 120, 0.6);
+      border-radius: 28px;
+      padding: 28px 22px;
+      background: rgba(18, 9, 31, 0.78);
+      box-shadow: 0 0 40px rgba(255, 152, 67, 0.18);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .app::before {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border: 1px solid rgba(255, 203, 120, 0.25);
+      border-radius: 22px;
+      pointer-events: none;
+    }
+
+    .badge {
+      text-align: center;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #ffcb78;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      line-height: 1.1;
+      margin: 0 0 12px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 15px;
+      line-height: 1.45;
+      color: rgba(249, 246, 242, 0.78);
+      margin-bottom: 26px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: #ffcb78;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 203, 120, 0.45);
+      background: rgba(255, 255, 255, 0.06);
+      color: #f9f6f2;
+      font-size: 16px;
+      outline: none;
+      margin-bottom: 18px;
+    }
+
+    input::placeholder {
+      color: rgba(249, 246, 242, 0.45);
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      background: linear-gradient(135deg, #ffcb78, #fb7727);
+      color: #12091f;
+      box-shadow: 0 10px 28px rgba(251, 119, 39, 0.28);
+    }
+
+    .result {
+      display: none;
+      text-align: center;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .result img {
+      width: 100%;
+      border-radius: 24px;
+      margin: 18px 0;
+      border: 1px solid rgba(255, 203, 120, 0.5);
+    }
+
+    .number {
+      font-size: 18px;
+      color: #ffcb78;
+      margin-bottom: 8px;
+    }
+
+    .text {
+      font-size: 16px;
+      line-height: 1.5;
+      color: rgba(249, 246, 242, 0.9);
+      margin-bottom: 22px;
+    }
+
+    .small {
+      font-size: 13px;
+      color: rgba(249, 246, 242, 0.62);
+      margin-top: 14px;
+      line-height: 1.4;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div id="formBlock">
+      <div class="badge">персональний розрахунок</div>
+
+      <h1>Число внутрішнього ресурсу</h1>
+
+      <p class="subtitle">
+        Введіть ім’я та дату народження, щоб дізнатися,
+        яка енергія підтримує вас зсередини.
+      </p>
+
+      <label for="name">Ваше ім’я</label>
+      <input id="name" type="text" placeholder="Наприклад, Олена" />
+
+      <label for="birthdate">Дата народження</label>
+      <input id="birthdate" type="date" />
+
+      <button onclick="calculateResource()">Розрахувати моє число</button>
+
+      <p class="small">
+        Після розрахунку повна розшифровка відкриється у боті.
+      </p>
+    </div>
+
+    <div id="resultBlock" class="result">
+      <div class="badge">ваш результат</div>
+
+      <h1 id="resultTitle"></h1>
+
+      <img id="resultImage" src="" alt="Число внутрішнього ресурсу" />
+
+      <div class="number" id="resultNumber"></div>
+
+      <div class="text" id="resultText"></div>
+
+      <button onclick="goToBot()">Читати повну розшифровку в боті</button>
+
+      <p class="small">
+        У боті на вас чекає детальне трактування та персональні підказки.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxwMkuDkoz9TuZ2E9W7Z_U-40TC0GFpu2ptpjFdOTmOlNAQwzsKfqDj5fxwEASedoFihA/exec";
+
+    const BOT_LINK = "https://t.me/USERNAME_BOT";
+
+    const images = {
+      1: "https://raw.githubusercontent.com/valiaefremova92-hue/solid-bassoon/main/photo_2026-06-13_14-42-22.jpg",
+      2: "https://raw.githubusercontent.com/valiaefremova92-hue/solid-bassoon/main/photo_2026-06-13_14-42-24.jpg",
+      3: "https://raw.githubusercontent.com/valiaefremova92-hue/solid-bassoon/main/photo_2026-06-13_14-42-11.jpg",
+      4: "https://raw.githubusercontent.com/valiaefremova92-hue/solid-bassoon/main/photo_2026-06-13_14-42-16.jpg",
+      5: "https://raw.githubusercontent.com/valiaefremova92-hue/solid-bassoon/main/photo_2026-06-13_14-42-14.jpg",
+      6: "https://raw.githubusercontent.com/valiaefremova92-hue/solid-bassoon/main/photo_2026-06-13_14-42-13.jpg",
+      7: "https://raw.githubusercontent.com/valiaefremova92-hue/solid-bassoon/main/photo_2026-06-13_14-42-19.jpg",
+      8: "https://raw.githubusercontent.com/valiaefremova92-hue/solid-bassoon/main/photo_2026-06-13_14-42-17.jpg",
+      9: "https://raw.githubusercontent.com/valiaefremova92-hue/solid-bassoon/main/photo_2026-06-13_14-42-20.jpg"
+    };
+
+    const shortTexts = {
+      1: "Ваш ресурс — дія, сміливість і вміння починати. Ви сильніші, коли не відкладаєте себе на потім.",
+      2: "Ваш ресурс — чутливість, інтуїція і вміння відчувати людей. Вам важливо берегти внутрішній спокій.",
+      3: "Ваш ресурс — творчість, проявленість і легкість. Коли ви дозволяєте собі звучати, енергії стає більше.",
+      4: "Ваш ресурс — структура, стабільність і опора. Вам важливо мати зрозумілий план і простір без хаосу.",
+      5: "Ваш ресурс — свобода, рух і новий досвід. Ви наповнюєтесь, коли дозволяєте собі більше життя.",
+      6: "Ваш ресурс — любов, турбота і краса. Ви сильніші, коли не тільки віддаєте, а й приймаєте.",
+      7: "Ваш ресурс — глибина, мудрість і внутрішнє знання. Відповіді часто вже є всередині вас.",
+      8: "Ваш ресурс — сила, реалізація і матеріальна опора. Вам важливо визнавати свою цінність.",
+      9: "Ваш ресурс — досвід, душевність і здатність бачити ширше. Ваша сила — у глибині та зрілості."
+    };
+
+    let currentResult = null;
+
+    function calculateResource() {
+      const name = document.getElementById("name").value.trim();
+      const birthdate = document.getElementById("birthdate").value;
+
+      if (!name || !birthdate) {
+        alert("Будь ласка, введіть ім’я та дату народження.");
+        return;
+      }
+
+      const digits = birthdate.replaceAll("-", "").split("").map(Number);
+      let sum = digits.reduce((a, b) => a + b, 0);
+
+      while (sum > 9) {
+        sum = String(sum).split("").map(Number).reduce((a, b) => a + b, 0);
+      }
+
+      currentResult = sum;
+
+      document.getElementById("resultTitle").innerText = `${name}, ваше число — ${sum}`;
+      document.getElementById("resultNumber").innerText = `Число внутрішнього ресурсу: ${sum}`;
+      document.getElementById("resultText").innerText = shortTexts[sum];
+      document.getElementById("resultImage").src = images[sum];
+
+      document.getElementById("formBlock").style.display = "none";
+      document.getElementById("resultBlock").style.display = "block";
+
+      saveData(name, birthdate, sum);
+    }
+
+    function saveData(name, birthdate, result) {
+      const tg = window.Telegram?.WebApp;
+      const user = tg?.initDataUnsafe?.user || {};
+
+      const data = {
+        telegram_id: user.id || "",
+        username: user.username || "",
+        first_name: user.first_name || "",
+        name: name,
+        birthdate: birthdate,
+        result: result,
+        date: new Date().toISOString()
+      };
+
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      });
+    }
+
+    function goToBot() {
+      if (window.Telegram?.WebApp) {
+        Telegram.WebApp.close();
+      } else {
+        window.location.href = BOT_LINK;
+      }
+    }
+  </script>
+</body>
+</html>
